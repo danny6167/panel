@@ -34,6 +34,7 @@ class AppSettingsCommand extends Command
 
     protected $signature = 'p:environment:setup
                             {--new-salt : Whether or not to generate a new salt for Hashids.}
+                            {--only-salt : Only generate Hashids salt values and skips the rest.}
                             {--author= : The email that services created on this instance should be linked to.}
                             {--url= : The URL that this Panel is running on.}
                             {--timezone= : The timezone to use for Panel times.}
@@ -65,6 +66,10 @@ class AppSettingsCommand extends Command
     {
         if (empty(config('hashids.salt')) || $this->option('new-salt')) {
             $this->variables['HASHIDS_SALT'] = str_random(20);
+            if ($this->option('only-salt')) {
+                $this->writeToEnvironment($this->variables);
+                return 0;
+            }
         }
 
         $this->output->comment('Provide the email address that eggs exported by this Panel should be from. This should be a valid email address.');

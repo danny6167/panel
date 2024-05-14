@@ -14,20 +14,23 @@ else
   echo "external vars don't exist."
   rm -rf /app/.env
   touch /app/var/.env
+  ln -s /app/var/.env /app/
 
-  ## manually generate a key because key generate --force fails
+  ## Generate keys
   if [ -z $APP_KEY ]; then
      echo -e "Generating key."
-     APP_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-     echo -e "Generated app key: $APP_KEY"
-     echo -e "APP_KEY=$APP_KEY" > /app/var/.env
+     echo -e 'APP_KEY=' > /app/var/.env
+     APP_ENVIRONMENT_ONLY=true php artisan key:generate --force
   else
     echo -e "APP_KEY exists in environment, using that."
     echo -e "APP_KEY=$APP_KEY" > /app/var/.env
   fi
 
-  ln -s /app/var/.env /app/
+
 fi
+
+# Ensure we have salt set
+php artisan p:environment:setup --only-salt
 
 echo "Checking if https is required."
 if [ -f /etc/nginx/http.d/panel.conf ]; then
